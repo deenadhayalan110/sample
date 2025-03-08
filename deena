@@ -1,0 +1,62 @@
+FROM nginx:latest
+WORKDIR /usr/share/nginx/html
+COPY . .
+EXPOSE 80
+CMD ["nginx","-g","daemon off;"]
+
+pipeline {
+    agent any
+
+    environment {
+       
+       
+        CREDENTIALS_ID = "docker-credentials" // Set up in Jenkins Credentials
+    }
+
+
+    stages {
+       
+        stage('Cleanup Before Build') {
+    steps {
+        cleanWs()
+    }
+}
+
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo "Cloning repository..."
+                    sh 'git clone https://github.com/SubashChandranKandhasamy/portfolio.git'
+                 
+                    sh 'cd portfolio && ls'
+                    sh 'ls'
+                   
+                   
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh "ls -l portfolio/Dockerfile" // Debugging step
+            sh "docker build -t docker:1 portfolio/"
+                }
+            }
+        }
+
+       
+    }
+
+    post {
+       
+       
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed!"
+        }
+    }
+}
